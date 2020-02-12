@@ -7,21 +7,20 @@ class Calculator:
         pass
 
     @staticmethod
-    def addition(num1, num2):
-        return num1 + num2
+    def addition(num1= 0.0, num2=0.0):
+        return round(num1 + num2, 2)
 
     @staticmethod
-    def subtraction(num1, num2):
-        return num1 - num2
+    def subtraction(num1=0.0, num2=0.0):
+        return round(num1 - num2, 2)
 
     @staticmethod
-    def multiplication(num1, num2):
-        return num1 * num2
+    def multiplication(num1=0.0, num2=0.0):
+        return round(num1 * num2, 2)
 
     @staticmethod
-    def division(num1, num2):
+    def division(num1=0.0, num2=1.0):
         # Handle divide by zero error.
-        try:
-            return num1 / num2
-        except ZeroDivisionError as err:
-            return err
+        if num2 == 0:
+            return "Invalid expression. Please try again!"
+        return round(num1/num2, 2)

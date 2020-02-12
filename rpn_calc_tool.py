@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from calculator import Calculator
-
+import signal, sys
 
 class RPNCalculator:
     def __init__(self):
@@ -13,30 +13,44 @@ class RPNCalculator:
         """
         print("*******************************")
         print("Welcome to your very own rpn calculator.")
-        print("*******************************")
+        print("*******************************\n")
 
+        # Handle SIGINT (control-C)
+        def signal_handler(sig, frame):
+            sys.exit(0)
+
+        signal.signal(signal.SIGINT, signal_handler)
         while True:
-            user_input = input("Please enter your values in RPN order! Press 'q' to quit any time!")
-            if user_input == "q" or user_input == "":
-                break
-            return self.evaluator(user_input)
+            user_input = None
+            try:
+                user_input = input("Please enter your values in RPN order! Press 'q' or ' ' to quit any time!\n > ")
+            except EOFError:
+                return "Exiting program. Thank you!"
+            finally:
+                if user_input == "q" or user_input == "":
+                    break
+            res = self.evaluator(user_input)
+            print("-> {}".format(res))
 
-        # BONUS: Display history of calculations
-        print("We have a record of your past evaluations. Would you like to take a look? (y, n)")
-        user_input = input()
+        # BONUS: Display history of valid calculations.
+        print("\nWould you like to take a look at your previous calculation record? (y, n)")
+        user_input = input("> ")
         if user_input.lower() == "y" or user_input.lower() == "n":
-            print("Your history of evaluations are as follows: ")
-            for k, v in self.history.items():
-                print("input: {}, output: {}".format(k, v))
-        print("Thank you for using our calculator. :)")
+            if not self.history:
+                print("No calculations have been done in the past!")
+            else:
+                print("Your history of evaluations are as follows: ")
+                for k, v in self.history.items():
+                    print("input: {}, output: {}".format(k, v))
+        print("Exiting program. Thank you!")
 
     def evaluator(self, input):
         """
         Accepts a postfix mathematical expression as an input,
         and parses it based off the rules of rpn evaluation and accordingly calls
         appropriate operations from calculator object..
-        :param input:
-        :return: sum
+        :param input: str
+        :return: sum: int or float
         """
         calculator = Calculator
         # Split string by whitespace to get list of tokens.
@@ -65,20 +79,25 @@ class RPNCalculator:
             is_valid_op = True if token in operations_map else False
             # Only execute step 1 if it's a valid integer or float.
             if not token.isalpha() and not is_valid_op:
-                try:  # TODO! Optimize?
+                try:
                     # Try to convert to an int.
                     token = int(token)
-                except Exception as e:
+                except Exception:
                     # Try to convert to a floating point.
                     try:
                         token = float(token)
-                    except Exception as e:
+                    except Exception:
                         return invalid_output_err
                 # Execute step 1.
                 rpn_stk.append(token)
             elif is_valid_op:
                 # Execute step 3.
-                num2, num1 = rpn_stk.pop(), rpn_stk.pop()  # Get number in reverse order due to stack nature.
+                try:
+                    num2, num1 = rpn_stk.pop(), rpn_stk.pop()  # Get number in reverse order due to stack's nature.
+                except Exception:
+                    return invalid_output_err
+
+                # Get appropriate function to call based off token and its corresponding mapping.
                 function_to_call = operations_map[token]
                 res = function_to_call(num1, num2)
                 rpn_stk.append(res)
@@ -89,6 +108,10 @@ class RPNCalculator:
         # Update history and return answer
         self.history[input] = rpn_stk[0]
         return self.history[input]
+
+
+
+
 
 
 if __name__ == "__main__":
