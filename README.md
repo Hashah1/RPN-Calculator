@@ -45,4 +45,4 @@ type to run program:
 ./rpn_calc_tool.py
 
 type to run unit tests for program modules: 
-python3 -m unittest <filename>
+python3 -m unittest tests/<filename>
